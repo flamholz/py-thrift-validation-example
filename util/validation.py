@@ -12,9 +12,9 @@ RECURSE_ON = frozenset([TType.STRUCT,
 def _ShouldRecurse(ttype):
     """Returns True if this ttype is one we recurse on for validation."""
     return ttype in RECURSE_ON
+    
 
-
-def DeepValidate(msg):
+def DeepValidate(msg, check_types=False):
     """Deep validation of thrift messages.
         
     Args:
@@ -31,13 +31,13 @@ def DeepValidate(msg):
             continue
         
         mtype = spec_tuple[1]
+        name = spec_tuple[2]
+        attr = getattr(msg, name)
         if not _ShouldRecurse(mtype):
             # Some primitive type that we don't validate.
             continue
         
         # Fetch the item itself.
-        name = spec_tuple[2]
-        attr = getattr(msg, name)
         if attr is None:
             return
         
