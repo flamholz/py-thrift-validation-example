@@ -46,6 +46,37 @@ class TestThriftUtil(unittest.TestCase):
         place.location = Review(rating=4, text="this place is pretty great")
         SerializeThriftMsg(place)
         
+    def testDeserializeEatsErrors(self):
+        """Deserialization detects wrongly embedded structures."""
+        # Can deserialize a valid serialized Place just fine.
+        place = Place(name="avi's place",
+                      location=Point(x=1.0, y=1.2))
+        serialized = SerializeThriftMsg(place)
+        DeserializeThriftMsg(Place(), serialized)
+        
+        # If we much up the type of the required Point field...
+        # We can STILL serialize and deserialize
+        place.location = Review(rating=4, text="this place is pretty great")
+        serialized = SerializeThriftMsg(place)
+        deserialized = DeserializeThriftMsg(Place(), serialized)
+        
+        # Thrift found an invalid location and simply failed to report it.
+        self.assertRaises(TProtocolException, deserialized.location.validate)
+        # Instead, it just set all the fields to None
+        self.assertIsNone(deserialized.location.x)
+        self.assertIsNone(deserialized.location.y)
+        
+        # If we muck up the type of the review, the same thing happens.
+        place.review = Point(x=3.4, y=1.1)
+        serialized = SerializeThriftMsg(place)
+        deserialized = DeserializeThriftMsg(Place(), serialized)
+
+        # Thrift found an invalid location and simply failed to report it.
+        self.assertRaises(TProtocolException, deserialized.review.validate)
+        # Instead, it just set all the fields to None
+        self.assertIsNone(deserialized.review.rating)
+        self.assertIsNone(deserialized.review.text)
+        
 
 if __name__ == '__main__':
     unittest.main()
