@@ -8,7 +8,7 @@ from avi.thrift.validation.test.ttypes import TestMessage, EmbeddedMessage
 import unittest
 
 
-class TestThriftUtil(unittest.TestCase):
+class ValidationTest(unittest.TestCase):
         
     def testDeepValidate(self):
         m = TestMessage(id=1, name='avi')
